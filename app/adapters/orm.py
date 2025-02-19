@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, MetaData, String, Table
+from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, Table, Text
 from sqlalchemy.orm import registry
 
 from app.domain.models.auth import User
+from app.domain.models.blog import Blog
 
 
 metadata = MetaData()
@@ -16,8 +17,18 @@ users_table = Table(
     Column("password", String(255), nullable=False),
 )
 
+blog_table = Table(
+    "blogs",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("title", String(50)),
+    Column("body", Text(5000)),
+    Column("author_id", Integer, ForeignKey("users.id"), nullable=False),
+)
+
 
 def start_mappers():
     mapper_registry = registry()
 
     mapper_registry.map_imperatively(User, users_table)
+    mapper_registry.map_declaratively(Blog, blog_table)

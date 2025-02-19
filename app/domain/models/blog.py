@@ -6,3 +6,5 @@ class Blog:
     title: str
     body: str
     author_id: int
+
+    id: int = None
