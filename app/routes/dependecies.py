@@ -12,6 +12,8 @@ from app.domain.models.auth import User
 
 session_factory = sessionmaker(bind=create_engine(database_url))
 
+def get_session():
+    return session_factory()
 
 def get_token(request: Request):
     token = request.cookies.get("users_access_token")
@@ -23,7 +25,7 @@ def get_token(request: Request):
 
 
 async def get_current_user(
-    token: str = Depends(get_token), session: Session = Depends(session_factory)
+    token: str = Depends(get_token), session: Session = Depends(get_session)
 ):
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=config.ALGORITHM)
