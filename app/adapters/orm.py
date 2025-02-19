@@ -31,4 +31,4 @@ def start_mappers():
     mapper_registry = registry()
 
     mapper_registry.map_imperatively(User, users_table)
-    mapper_registry.map_declaratively(Blog, blog_table)
+    mapper_registry.map_imperatively(Blog, blog_table)
