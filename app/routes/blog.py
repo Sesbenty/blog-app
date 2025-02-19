@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from app.domain.models.auth import User
 from app.domain.models.blog import Blog
@@ -20,15 +20,34 @@ async def get_all_blogs():
 
 
 @blog_router.get("/{blog_id}")
-async def get_blog(blog_id: int):
-    pass
+async def get_blog(blog_id: int, session: Session = Depends(get_session)):
+    blog = session.get(Blog, blog_id)
+    # blog_info = BlogInfo.model_validate(asdict(blog))
+    return blog
 
 
 @blog_router.post("/{blog_id}")
-async def update_blog(blog_id: int):
-    pass
+async def update_blog(
+    blog_id: int,
+    blog_data: BlogBase,
+    user_data: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    blog_to_update = session.get(Blog, blog_id)
+    if blog_to_update.author_id != user_data.id:
+        raise HTTPException()
 
-async def create_blog(blod_data: BlogBase, user_data: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    blog = Blog(author_id=user_data.id, **blod_data)
+    blog_to_update.title = blog_data.title
+    blog_to_update.body = blog_data.body
+    session.commit()
+
+
+@blog_router.post("/")
+async def create_blog(
+    blog_data: BlogBase,
+    user_data: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    blog = Blog(author_id=user_data.id, **blog_data.model_dump())
     session.add(blog)
     session.commit()
