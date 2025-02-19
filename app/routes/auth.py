@@ -1,59 +1,14 @@
 from dataclasses import asdict
-from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from jose import JWTError, jwt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy.orm import Session
 
-from app import config, utils
-from app.config import database_url
+from app import utils
 from app.domain.models.auth import User
-from app.domain.schemas import UserAuth, UserBase, UserRegister
+from app.domain.schemas.auth import UserAuth, UserBase, UserRegister
+from app.routes.dependecies import session_factory, get_current_user
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
-
-session_factory = sessionmaker(bind=create_engine(database_url))
-
-
-def get_token(request: Request):
-    token = request.cookies.get("users_access_token")
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found"
-        )
-    return token
-
-
-async def get_current_user(
-    token: str = Depends(get_token), session: Session = Depends(session_factory)
-):
-    try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=config.ALGORITHM)
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="The token is not valid!"
-        )
-
-    expire: str = payload.get("exp")
-    expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
-    if (not expire) or (expire_time < datetime.now(timezone.utc)):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-        )
-
-    user_id: str = payload.get("sub")
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User ID not found"
-        )
-
-    user = await session.query(User).filter_by(id=user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
-        )
-    return user
 
 
 @auth_router.post("/register/")
