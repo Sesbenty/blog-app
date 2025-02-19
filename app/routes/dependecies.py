@@ -47,7 +47,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User ID not found"
         )
 
-    user = await session.query(User).filter_by(id=user_id)
+    user = session.get(User, user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
