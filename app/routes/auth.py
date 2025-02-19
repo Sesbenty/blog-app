@@ -8,12 +8,13 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from app import config, utils
 from app.config import database_url
-from app.domain.model import User
+from app.domain.models.auth import User
 from app.domain.schemas import UserAuth, UserBase, UserRegister
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 session_factory = sessionmaker(bind=create_engine(database_url))
+
 
 def get_token(request: Request):
     token = request.cookies.get("users_access_token")
@@ -24,7 +25,9 @@ def get_token(request: Request):
     return token
 
 
-async def get_current_user(token: str = Depends(get_token), session: Session = Depends(session_factory)):
+async def get_current_user(
+    token: str = Depends(get_token), session: Session = Depends(session_factory)
+):
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=config.ALGORITHM)
     except JWTError:
@@ -52,8 +55,11 @@ async def get_current_user(token: str = Depends(get_token), session: Session = D
         )
     return user
 
+
 @auth_router.post("/register/")
-async def register_user(user_data: UserRegister, session: Session = Depends(session_factory)):
+async def register_user(
+    user_data: UserRegister, session: Session = Depends(session_factory)
+):
     user = session.query(User).filter_by(email=user_data.email).first()
     if user:
         raise HTTPException(
@@ -69,7 +75,9 @@ async def register_user(user_data: UserRegister, session: Session = Depends(sess
 
 
 @auth_router.post("/login/")
-async def auth_user(response: Response, user_data: UserAuth, session: Session = Depends(session_factory)):
+async def auth_user(
+    response: Response, user_data: UserAuth, session: Session = Depends(session_factory)
+):
     user = session.query(User).filter_by(email=user_data.email).first()
     if user and utils.verify_password(user_data.password, user.password):
         access_token = utils.create_access_token({"sub": str(user.id)})
