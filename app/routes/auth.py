@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from jose import JWTError, jwt
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 from app import config, utils
 from app.config import database_url
@@ -15,9 +15,6 @@ auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 session_factory = sessionmaker(bind=create_engine(database_url))
 
-session = session_factory()
-
-
 def get_token(request: Request):
     token = request.cookies.get("users_access_token")
     if not token:
@@ -27,7 +24,7 @@ def get_token(request: Request):
     return token
 
 
-async def get_current_user(token: str = Depends(get_token)):
+async def get_current_user(token: str = Depends(get_token), session: Session = Depends(session_factory)):
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=config.ALGORITHM)
     except JWTError:
@@ -55,9 +52,8 @@ async def get_current_user(token: str = Depends(get_token)):
         )
     return user
 
-
 @auth_router.post("/register/")
-async def register_user(user_data: UserRegister):
+async def register_user(user_data: UserRegister, session: Session = Depends(session_factory)):
     user = session.query(User).filter_by(email=user_data.email).first()
     if user:
         raise HTTPException(
@@ -73,7 +69,7 @@ async def register_user(user_data: UserRegister):
 
 
 @auth_router.post("/login/")
-async def auth_user(response: Response, user_data: UserAuth):
+async def auth_user(response: Response, user_data: UserAuth, session: Session = Depends(session_factory)):
     user = session.query(User).filter_by(email=user_data.email).first()
     if user and utils.verify_password(user_data.password, user.password):
         access_token = utils.create_access_token({"sub": str(user.id)})
