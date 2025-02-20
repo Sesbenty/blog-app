@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, Table, Tex
 from sqlalchemy.orm import registry, relationship
 
 from app.domain.models.auth import User
-from app.domain.models.blog import Blog
+from app.domain.models.blog import Blog, BlogTags, Tag
 
 
 metadata = MetaData()
@@ -26,6 +26,20 @@ blog_table = Table(
     Column("author_id", Integer, ForeignKey("users.id"), nullable=False),
 )
 
+tags_table = Table(
+    "tags",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("name", String(50), unique=True),
+)
+
+blog_tags_table = Table(
+    "blog_tags",
+    metadata,
+    Column("blog_id", Integer, ForeignKey("blogs.id"), nullable=False, primary_key=True),
+    Column("tag_id", Integer, ForeignKey("tags.id"), nullable=False, primary_key=True),
+)
+
 
 def start_mappers():
     mapper_registry = registry()
@@ -35,6 +49,9 @@ def start_mappers():
         Blog,
         blog_table,
         properties={
-            "author": relationship(User, backref="users", order_by=users_table.c.id)
+            "author": relationship(User, backref="users", order_by=users_table.c.id),
+            "tags": relationship(Tag, secondary=blog_tags_table, collection_class=list),
         },
     )
+    mapper_registry.map_imperatively(Tag, tags_table)
+    mapper_registry.map_imperatively(BlogTags, blog_tags_table)

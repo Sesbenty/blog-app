@@ -9,9 +9,14 @@ class BlogBase(BaseModel):
 
 
 class BlogCreate(BlogBase):
-    pass
+    tags: list["TagResponse"]
 
 
 class BlogInfo(BlogBase):
     id: int
     author: UserInfo
+    tags: list["TagResponse"]
+
+class TagResponse(BaseModel):
+    id: int
+    name: str

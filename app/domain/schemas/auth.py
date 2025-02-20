@@ -13,8 +13,11 @@ class UserBase(EmailModel):
     last_name: str = Field(min_length=3, max_length=50)
 
 
-class UserInfo(UserBase):
+class UserInfo(BaseModel):
     id: int
+    first_name: str = Field(min_length=3, max_length=50)
+    last_name: str = Field(min_length=3, max_length=50)
+
 
 
 class UserRegister(UserBase):
