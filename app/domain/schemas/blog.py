@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.domain.schemas.auth import UserBase
+from app.domain.schemas.auth import UserInfo
 
 
 class BlogBase(BaseModel):
@@ -8,6 +8,9 @@ class BlogBase(BaseModel):
     body: str
 
 
+class BlogCreate(BlogBase):
+    pass
+
 class BlogInfo(BlogBase):
     id: int
-    author: UserBase
+    author: UserInfo

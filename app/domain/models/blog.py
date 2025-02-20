@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from app.domain.models.auth import User
+
 
 @dataclass
 class Blog:
@@ -8,3 +10,5 @@ class Blog:
     author_id: int
 
     id: int = None
+
+    author: User = None

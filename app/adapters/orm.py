@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, Table, Text
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import registry, relationship
 
 from app.domain.models.auth import User
 from app.domain.models.blog import Blog
@@ -31,4 +31,10 @@ def start_mappers():
     mapper_registry = registry()
 
     mapper_registry.map_imperatively(User, users_table)
-    mapper_registry.map_imperatively(Blog, blog_table)
+    mapper_registry.map_imperatively(
+        Blog,
+        blog_table,
+        properties={
+            "author": relationship(User, backref="users", order_by=users_table.c.id)
+        },
+    )
