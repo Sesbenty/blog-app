@@ -2,7 +2,7 @@ line-length = 90
 indent-width = 4
 
 target-version = "py312"
-
+exclude = [".venv", "migration"]
 [lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
 # Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
