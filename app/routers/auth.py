@@ -6,15 +6,13 @@ from sqlalchemy.orm import Session
 from app import utils
 from app.domain.models.auth import User
 from app.domain.schemas.auth import UserAuth, UserBase, UserRegister
-from app.routes.dependecies import get_session, get_current_user
+from app.routers.dependecies import get_session, get_current_user
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @auth_router.post("/register/")
-async def register_user(
-    user_data: UserRegister, session: Session = Depends(get_session)
-):
+async def register_user(user_data: UserRegister, session: Session = Depends(get_session)):
     user = session.query(User).filter_by(email=user_data.email).first()
     if user:
         raise HTTPException(

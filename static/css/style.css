@@ -1,0 +1,22 @@
+html{
+    --gray-dark: #333333;
+    --sky-white: #E1F4F3;
+    --gray-light: #706C61;
+    --white: #FFFFFF
+}
+
+body{
+    background: var(--sky-white);
+    margin: 0px;
+}
+.header {
+    padding: 40px;
+    background: var(--gray-light);
+    color: var(--white);
+    font-size: 24px;
+  }
+.header > h1 {
+    margin: 4px;
+    padding: 0px;
+}
+

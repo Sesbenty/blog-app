@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from app import config
+from app.adapters.repository import AbstractUserRepository, SqlAlchemyUserRepository
 from app.config import database_url
 from app.domain.models.auth import User
 
@@ -15,6 +16,12 @@ session_factory = sessionmaker(bind=create_engine(database_url))
 
 def get_session():
     return session_factory()
+
+
+def get_user_repository(
+    session: Session = Depends(get_session),
+) -> AbstractUserRepository:
+    return SqlAlchemyUserRepository(session)
 
 
 def get_token(request: Request):

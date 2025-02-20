@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.domain.models.auth import User
 from app.domain.models.blog import Blog
 from app.domain.schemas.blog import BlogBase, BlogCreate, BlogInfo
-from app.routes.dependecies import get_current_user, get_session
+from app.routers.dependecies import get_current_user, get_session
 
 blog_router = APIRouter(prefix="/blog", tags=["Blog"])
 

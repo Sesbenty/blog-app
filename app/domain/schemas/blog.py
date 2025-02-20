@@ -11,6 +11,7 @@ class BlogBase(BaseModel):
 class BlogCreate(BlogBase):
     pass
 
+
 class BlogInfo(BlogBase):
     id: int
     author: UserInfo
