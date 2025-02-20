@@ -12,8 +12,10 @@ from app.domain.models.auth import User
 
 session_factory = sessionmaker(bind=create_engine(database_url))
 
+
 def get_session():
     return session_factory()
+
 
 def get_token(request: Request):
     token = request.cookies.get("users_access_token")

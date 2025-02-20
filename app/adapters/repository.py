@@ -3,7 +3,6 @@ import abc
 from app.domain.models.auth import User
 
 
-
 class AbstractUserRepository(abc.ABC):
     @abc.abstractmethod
     def add(self, user: User):

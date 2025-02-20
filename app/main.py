@@ -9,6 +9,7 @@ app = FastAPI(title="Blog API")
 
 start_mappers()
 
+
 @app.get("/")
 def root():
     return "root"
