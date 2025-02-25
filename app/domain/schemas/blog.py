@@ -17,6 +17,11 @@ class BlogInfo(BlogBase):
     author: UserInfo
     tags: list["TagResponse"]
 
+
 class TagResponse(BaseModel):
     id: int
     name: str
+
+
+class FeedFilter(BaseModel):
+    pass

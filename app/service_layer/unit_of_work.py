@@ -3,11 +3,17 @@ from typing import Callable
 
 from sqlalchemy.orm import Session
 
-from app.adapters.repository import SqlAlchemyUserRepository, UserRepository
+from app.adapters.repository import (
+    BlogRepository,
+    SqlAlchemyBlogRepository,
+    SqlAlchemyUserRepository,
+    UserRepository,
+)
 
 
 class AbstractUnitOfWork(abc.ABC):
     users: UserRepository
+    blogs: BlogRepository
 
     def __enter__(self) -> "AbstractUnitOfWork":
         return self
@@ -34,6 +40,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __enter__(self):
         self.session = self.session_factory()
         self.users = SqlAlchemyUserRepository(self.session)
+        self.blogs = SqlAlchemyBlogRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):
