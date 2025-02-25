@@ -4,7 +4,7 @@ from app.domain.models.auth import User
 from app.domain.models.blog import Blog, Tag
 
 
-class AbstractUserRepository(abc.ABC):
+class UserRepository(abc.ABC):
     @abc.abstractmethod
     def add(self, user: User):
         raise NotImplementedError
@@ -14,11 +14,11 @@ class AbstractUserRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_by_email(self, email: str):
+    def get_by_email(self, email: str) -> User:
         raise NotImplementedError
 
 
-class SqlAlchemyUserRepository(AbstractUserRepository):
+class SqlAlchemyUserRepository(UserRepository):
     def __init__(self, session):
         self.session = session
 

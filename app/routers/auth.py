@@ -1,31 +1,23 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
 from app import utils
 from app.domain.models.auth import User
 from app.domain.schemas.auth import UserAuth, UserBase, UserRegister
 from app.routers.dependecies import get_session, get_current_user
+from app.service_layer import services
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @auth_router.post("/register/")
-async def register_user(user_data: UserRegister, session: Session = Depends(get_session)):
-    user = session.query(User).filter_by(email=user_data.email).first()
-    if user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="User already exsists"
-        )
-
-    user_data_dict = user_data.model_dump()
-    del user_data_dict["confirm_password"]
-    user = User(**user_data_dict)
-
-    session.add(user)
-    session.commit()
-
+async def register_user(user_data: UserRegister):
+    try:
+        services.register_user(user_data)
+    except Exception:
+        pass
 
 @auth_router.post("/login/")
 async def auth_user(
