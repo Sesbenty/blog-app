@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.adapters.repository import (
     BlogRepository,
+    CommentRepository,
     SqlAlchemyBlogRepository,
+    SqlAlchemyCommentRepository,
     SqlAlchemyUserRepository,
     UserRepository,
 )
@@ -14,6 +16,7 @@ from app.adapters.repository import (
 class AbstractUnitOfWork(abc.ABC):
     users: UserRepository
     blogs: BlogRepository
+    comments: CommentRepository
 
     def __enter__(self) -> "AbstractUnitOfWork":
         return self
@@ -41,6 +44,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.session = self.session_factory()
         self.users = SqlAlchemyUserRepository(self.session)
         self.blogs = SqlAlchemyBlogRepository(self.session)
+        self.comments = SqlAlchemyCommentRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):

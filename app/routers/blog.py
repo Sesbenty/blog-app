@@ -3,7 +3,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.adapters.repository import BlogRepository
-from app.domain.schemas.blog import BlogBase, BlogCreate, BlogInfo
+from app.domain.schemas.blog import BlogBase, BlogCreate, BlogInfo, CommentCreate
 from app.routers.dependecies import get_blog_repository, get_uow, get_user_id
 from app.service_layer import services
 from app.service_layer.exceptions import ServicesException
@@ -63,5 +63,18 @@ async def create_blog(
 ):
     try:
         services.create_blog(user_id, blog_data, uow)
+    except ServicesException as e:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=str(e))
+
+
+@blog_router.post("/{blog_id}/comment")
+async def add_comment(
+    comment_data: CommentCreate,
+    blog_id: int,
+    user_id: int = Depends(get_user_id),
+    uow: AbstractUnitOfWork = Depends(get_uow),
+):
+    try:
+        services.add_comment(blog_id, user_id, comment_data, uow)
     except ServicesException as e:
         raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=str(e))

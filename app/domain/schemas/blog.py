@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 from app.domain.schemas.auth import UserInfo
@@ -15,6 +16,7 @@ class BlogCreate(BlogBase):
 class BlogInfo(BlogBase):
     id: int
     author: UserInfo
+    date_publish: datetime
     tags: list["TagResponse"]
 
 
@@ -25,3 +27,7 @@ class TagResponse(BaseModel):
 
 class FeedFilter(BaseModel):
     pass
+
+
+class CommentCreate(BaseModel):
+    text: str

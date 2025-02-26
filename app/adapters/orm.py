@@ -1,8 +1,18 @@
-from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, Table, Text
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    DateTime,
+    Enum,
+)
 from sqlalchemy.orm import registry, relationship
 
 from app.domain.models.auth import User
-from app.domain.models.blog import Blog, BlogTags, Tag
+from app.domain.models.blog import Blog, BlogStatus, BlogTags, Comment, Tag
 
 
 metadata = MetaData()
@@ -24,6 +34,8 @@ blog_table = Table(
     Column("title", String(50)),
     Column("body", Text(5000)),
     Column("author_id", Integer, ForeignKey("users.id"), nullable=False),
+    Column("status", Enum(BlogStatus)),
+    Column("date_publish", DateTime),
 )
 
 tags_table = Table(
@@ -38,6 +50,16 @@ blog_tags_table = Table(
     metadata,
     Column("blog_id", Integer, ForeignKey("blogs.id"), nullable=False, primary_key=True),
     Column("tag_id", Integer, ForeignKey("tags.id"), nullable=False, primary_key=True),
+)
+
+comment_table = Table(
+    "comments",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("text", String(200), nullable=False),
+    Column("date_publish", DateTime(timezone=True), nullable=False),
+    Column("author_id", Integer, ForeignKey("users.id"), nullable=False),
+    Column("blog_id", Integer, ForeignKey("blogs.id"), nullable=False),
 )
 
 
@@ -55,3 +77,4 @@ def start_mappers():
     )
     mapper_registry.map_imperatively(Tag, tags_table)
     mapper_registry.map_imperatively(BlogTags, blog_tags_table)
+    mapper_registry.map_imperatively(Comment, comment_table)

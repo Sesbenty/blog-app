@@ -1,7 +1,7 @@
 import abc
 
 from app.domain.models.auth import User
-from app.domain.models.blog import Blog, Tag
+from app.domain.models.blog import Blog, Comment, Tag
 
 
 class UserRepository(abc.ABC):
@@ -65,3 +65,38 @@ class SqlAlchemyBlogRepository(abc.ABC):
 
     def get_by_tags(self, tags: list[Tag]) -> list[Blog]:
         pass
+
+
+class CommentRepository(abc.ABC):
+    @abc.abstractmethod
+    def add(self, comment: Comment):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get(self, id: int) -> Comment:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, comment: Comment):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_blog_comments(self, blog_id: int) -> list[Comment]:
+        raise NotImplementedError
+
+
+class SqlAlchemyCommentRepository(CommentRepository):
+    def __init__(self, session):
+        self.session = session
+
+    def add(self, comment: Comment):
+        self.session.add(comment)
+
+    def get(self, id: int) -> Comment:
+        return self.session.query(Comment).filter_by(id=id).first()
+
+    def delete(self, comment: Comment):
+        self.session.delete(comment)
+
+    def get_blog_comments(self, blog_id: int) -> list[Comment]:
+        return self.session.query(Comment).filter_by(blog_id=blog_id).all()

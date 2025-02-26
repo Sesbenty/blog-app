@@ -1,8 +1,9 @@
+from datetime import datetime
 from app import utils
 from app.domain.models.auth import User
-from app.domain.models.blog import Blog
+from app.domain.models.blog import Blog, Comment
 from app.domain.schemas.auth import UserAuth, UserRegister
-from app.domain.schemas.blog import BlogBase, BlogCreate
+from app.domain.schemas.blog import BlogBase, BlogCreate, CommentCreate
 from app.service_layer.exceptions import (
     IncorrectLoginOrPasswordException,
     IncorrectUserId,
@@ -48,7 +49,6 @@ def create_blog(user_id: int, blog_data: BlogCreate, uow: AbstractUnitOfWork):
 
         blog = Blog(**blog_data_dict)
         blog.author = user
-        print(blog.author_id)
         uow.blogs.add(blog)
         uow.commit()
 
@@ -84,4 +84,27 @@ def delete_blog(blog_id: int, user_id: int, uow: AbstractUnitOfWork):
             raise UserNotOwnerBlogException
 
         uow.blogs.delete(blog)
+        uow.commit()
+
+
+def add_comment(
+    blog_id: int, user_id: int, comment_data: CommentCreate, uow: AbstractUnitOfWork
+):
+    with uow:
+        blog = uow.blogs.get(blog_id)
+        user = uow.users.get(user_id)
+
+        if not user:
+            raise IncorrectUserId
+
+        if not blog:
+            return  # FIXME
+
+        comment = Comment(
+            date_publish=datetime.now(),
+            author_id=user_id,
+            blog_id=blog_id,
+            **comment_data.model_dump(),
+        )
+        uow.comments.add(comment)
         uow.commit()
