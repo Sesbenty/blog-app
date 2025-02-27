@@ -5,6 +5,7 @@ from app.domain.models.blog import Blog, Comment
 from app.domain.schemas.auth import UserAuth, UserRegister
 from app.domain.schemas.blog import BlogBase, BlogCreate, CommentCreate
 from app.service_layer.exceptions import (
+    BlogDidNotExist,
     IncorrectLoginOrPasswordException,
     IncorrectUserId,
     UserNotOwnerBlogException,
@@ -78,7 +79,7 @@ def delete_blog(blog_id: int, user_id: int, uow: AbstractUnitOfWork):
             raise IncorrectUserId
 
         if not blog:
-            return  # FIXME:
+            return BlogDidNotExist
 
         if blog.author_id != user.id:
             raise UserNotOwnerBlogException
@@ -98,7 +99,7 @@ def add_comment(
             raise IncorrectUserId
 
         if not blog:
-            return  # FIXME
+            raise BlogDidNotExist
 
         comment = Comment(
             date_publish=datetime.now(),
@@ -108,3 +109,15 @@ def add_comment(
         )
         uow.comments.add(comment)
         uow.commit()
+
+
+def delete_comment():
+    pass
+
+
+def update_comment():
+    pass
+
+
+def get_blog_comments():
+    pass

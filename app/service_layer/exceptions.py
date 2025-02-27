@@ -30,9 +30,18 @@ class UserNotOwnerBlogException(ServicesException):
 
 
 class IncorrectUserId(ServicesException):
-    def __init__(self, *args):
+    def __init__(self):
         self.msg = "Incorrect user id"
         super().__init__(self.msg)
+
+    def __str__(self):
+        return self.msg
+
+
+class BlogDidNotExist(ServicesException):
+    def __init__(self):
+        self.msg = "The blog was deleted or did not exist"
+        super().__init__()
 
     def __str__(self):
         return self.msg
