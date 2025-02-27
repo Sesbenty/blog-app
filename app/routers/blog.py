@@ -3,7 +3,13 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.adapters.repository import BlogRepository
-from app.domain.schemas.blog import BlogBase, BlogCreate, BlogInfo, CommentCreate
+from app.domain.schemas.blog import (
+    BlogBase,
+    BlogCreate,
+    BlogInfo,
+    CommentCreate,
+    CommentUpdate,
+)
 from app.routers.dependecies import get_blog_repository, get_uow, get_user_id
 from app.service_layer import services
 from app.service_layer.exceptions import ServicesException
@@ -42,7 +48,7 @@ async def get_blog(blog_id: int, repo: BlogRepository = Depends(get_blog_reposit
         pass
 
 
-@blog_router.post("/{blog_id}")
+@blog_router.put("/{blog_id}")
 async def update_blog(
     blog_id: int,
     blog_data: BlogBase,
@@ -67,7 +73,7 @@ async def create_blog(
         raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=str(e))
 
 
-@blog_router.post("/{blog_id}/comment")
+@blog_router.post("/{blog_id}/comments")
 async def add_comment(
     comment_data: CommentCreate,
     blog_id: int,
@@ -78,3 +84,27 @@ async def add_comment(
         services.add_comment(blog_id, user_id, comment_data, uow)
     except ServicesException as e:
         raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=str(e))
+
+
+@blog_router.delete("/comments/{comment_id}")
+async def delete_comment(
+    comment_id: int,
+    user_id: int = Depends(get_user_id),
+    uow: AbstractUnitOfWork = Depends(get_uow),
+):
+    pass
+
+
+@blog_router.get("/{blog_id}/comments")
+async def get_blog_comments(blog_id: int, uow: AbstractUnitOfWork = Depends(get_uow)):
+    pass
+
+
+@blog_router.put("/comments/{comment_id}")
+async def udate_comment(
+    blod_id: int,
+    comment_data: CommentUpdate,
+    user_id: int = Depends(get_user_id),
+    uow: AbstractUnitOfWork = Depends(get_uow),
+):
+    pass
