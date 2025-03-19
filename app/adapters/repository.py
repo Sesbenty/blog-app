@@ -100,3 +100,29 @@ class SqlAlchemyCommentRepository(CommentRepository):
 
     def get_blog_comments(self, blog_id: int) -> list[Comment]:
         return self.session.query(Comment).filter_by(blog_id=blog_id).all()
+
+
+class TagRepository(abc.ABC):
+    @abc.abstractmethod
+    def get(self, id: int) -> Tag:
+        raise NotImplementedError
+
+    def add(self, tag: Tag):
+        raise NotImplementedError
+
+    def get_by_name(self, name: str) -> Tag:
+        raise NotImplementedError
+
+
+class SqlAlchemyTagRepository(TagRepository):
+    def __init__(self, session):
+        self.session = session
+
+    def get(self, id: int) -> Tag:
+        return self.session.query(Tag).filter_by(id=id).first()
+
+    def add(self, tag: Tag):
+        self.session.add(tag)
+
+    def get_by_name(self, name: str) -> Tag:
+        return self.session.query(Tag).filter_by(name=name).first()

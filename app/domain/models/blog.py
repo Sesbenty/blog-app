@@ -29,8 +29,8 @@ class Blog:
 
 @dataclass
 class Tag:
-    id: int
     name: str
+    id: int = None
 
 
 @dataclass

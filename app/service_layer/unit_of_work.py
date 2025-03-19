@@ -8,7 +8,9 @@ from app.adapters.repository import (
     CommentRepository,
     SqlAlchemyBlogRepository,
     SqlAlchemyCommentRepository,
+    SqlAlchemyTagRepository,
     SqlAlchemyUserRepository,
+    TagRepository,
     UserRepository,
 )
 
@@ -17,6 +19,7 @@ class AbstractUnitOfWork(abc.ABC):
     users: UserRepository
     blogs: BlogRepository
     comments: CommentRepository
+    tags: TagRepository
 
     def __enter__(self) -> "AbstractUnitOfWork":
         return self
@@ -42,9 +45,11 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def __enter__(self):
         self.session = self.session_factory()
+        self.session.autoflush = True
         self.users = SqlAlchemyUserRepository(self.session)
         self.blogs = SqlAlchemyBlogRepository(self.session)
         self.comments = SqlAlchemyCommentRepository(self.session)
+        self.tags = SqlAlchemyTagRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):

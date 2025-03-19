@@ -1,9 +1,9 @@
 from datetime import datetime
 from app import utils
 from app.domain.models.auth import User
-from app.domain.models.blog import Blog, Comment
+from app.domain.models.blog import Blog, BlogStatus, Comment, Tag
 from app.domain.schemas.auth import UserAuth, UserRegister
-from app.domain.schemas.blog import BlogBase, BlogCreate, CommentCreate
+from app.domain.schemas.blog import BlogBase, BlogCreate, BlogStatusChange, CommentCreate
 from app.service_layer.exceptions import (
     BlogDidNotExist,
     IncorrectLoginOrPasswordException,
@@ -44,11 +44,19 @@ def create_blog(user_id: int, blog_data: BlogCreate, uow: AbstractUnitOfWork):
         if not user:
             raise IncorrectUserId
 
+        tags = []
+        for tag_data in blog_data.tags:
+            tag = uow.tags.get_by_name(tag_data.name)
+            if not tag:
+                tag = Tag(**tag_data.model_dump())
+                uow.tags.add(tag)
+            tags.append(tag)
+
         blog_data_dict = blog_data.model_dump()
-        blog_data_dict["tags"] = []
+        blog_data_dict["tags"] = tags
         blog_data_dict["author_id"] = user.id
 
-        blog = Blog(**blog_data_dict)
+        blog = Blog(status=BlogStatus.HIDE, date_publish=None, **blog_data_dict)
         blog.author = user
         uow.blogs.add(blog)
         uow.commit()
@@ -88,6 +96,29 @@ def delete_blog(blog_id: int, user_id: int, uow: AbstractUnitOfWork):
         uow.commit()
 
 
+def update_blog_status(
+    blog_id: int, user_id: int, blog_data: BlogStatusChange, uow: AbstractUnitOfWork
+):
+    with uow:
+        blog = uow.blogs.get(blog_id)
+        user = uow.users.get(user_id)
+
+        if not user:
+            raise IncorrectUserId
+
+        if not blog:
+            raise BlogDidNotExist
+
+        if user.id != blog.author_id:
+            raise UserNotOwnerBlogException
+
+        blog.status = blog_data.status
+        if blog_data.status == BlogStatus.PUBLISH:
+            blog.date_publish = datetime.now()
+
+        uow.commit()
+
+
 def add_comment(
     blog_id: int, user_id: int, comment_data: CommentCreate, uow: AbstractUnitOfWork
 ):
@@ -100,6 +131,9 @@ def add_comment(
 
         if not blog:
             raise BlogDidNotExist
+
+        if blog.status is not BlogStatus.PUBLISH:
+            return  # TODO
 
         comment = Comment(
             date_publish=datetime.now(),

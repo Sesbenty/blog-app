@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 
+from app.domain.models.blog import BlogStatus
 from app.domain.schemas.auth import UserInfo
 
 
@@ -21,7 +22,6 @@ class BlogInfo(BlogBase):
 
 
 class TagResponse(BaseModel):
-    id: int
     name: str
 
 
@@ -35,3 +35,7 @@ class CommentCreate(BaseModel):
 
 class CommentUpdate(BaseModel):
     text: str
+
+
+class BlogStatusChange(BaseModel):
+    status: BlogStatus

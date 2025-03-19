@@ -7,6 +7,7 @@ from app.domain.schemas.blog import (
     BlogBase,
     BlogCreate,
     BlogInfo,
+    BlogStatusChange,
     CommentCreate,
     CommentUpdate,
 )
@@ -69,6 +70,19 @@ async def create_blog(
 ):
     try:
         services.create_blog(user_id, blog_data, uow)
+    except ServicesException as e:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=str(e))
+
+
+@blog_router.put("/{blog_id}/status")
+async def update_blog_status(
+    blog_status: BlogStatusChange,
+    blog_id: int,
+    user_id: int = Depends(get_user_id),
+    uow: AbstractUnitOfWork = Depends(get_uow),
+):
+    try:
+        services.update_blog_status(blog_id, user_id, blog_status, uow)
     except ServicesException as e:
         raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail=str(e))
 
