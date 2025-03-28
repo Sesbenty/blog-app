@@ -1,14 +1,24 @@
 from datetime import datetime
+
 from app import utils
 from app.domain.models.auth import User
 from app.domain.models.blog import Blog, BlogStatus, Comment, Tag
 from app.domain.schemas.auth import UserAuth, UserRegister
-from app.domain.schemas.blog import BlogBase, BlogCreate, BlogStatusChange, CommentCreate
+from app.domain.schemas.blog import (
+    BlogBase,
+    BlogCreate,
+    BlogStatusChange,
+    CommentCreate,
+    CommentUpdate,
+)
 from app.service_layer.exceptions import (
     BlogDidNotExist,
+    BlogDidNotPublish,
+    IncorrectCommentId,
     IncorrectLoginOrPasswordException,
     IncorrectUserId,
     UserNotOwnerBlogException,
+    UserNotOwnerCommentException,
     UserRegisteredException,
 )
 from app.service_layer.unit_of_work import AbstractUnitOfWork
@@ -133,7 +143,7 @@ def add_comment(
             raise BlogDidNotExist
 
         if blog.status is not BlogStatus.PUBLISH:
-            return  # TODO
+            raise BlogDidNotPublish
 
         comment = Comment(
             date_publish=datetime.now(),
@@ -145,13 +155,44 @@ def add_comment(
         uow.commit()
 
 
-def delete_comment():
-    pass
+def delete_comment(user_id: int, comment_id: int, uow: AbstractUnitOfWork):
+    with uow:
+        comment = uow.comments.get(comment_id)
+        user = uow.users.get(user_id)
+
+        if not user:
+            raise IncorrectUserId
+
+        if not comment:
+            raise IncorrectCommentId
+
+        if user_id != comment.author_id:
+            raise UserNotOwnerCommentException
+
+        uow.comments.delete(comment)
+        uow.commit()
 
 
-def update_comment():
-    pass
+def update_comment(
+    user_id: int, comment_id: int, comment_data: CommentUpdate, uow: AbstractUnitOfWork
+):
+    with uow:
+        comment = uow.comments.get(comment_id)
+        user = uow.users.get(user_id)
+
+        if not user:
+            raise IncorrectUserId
+
+        if not comment:
+            raise IncorrectCommentId
+
+        if user_id != comment.author_id:
+            raise UserNotOwnerCommentException
+
+        comment.text = comment_data.text
+        uow.commit()
 
 
-def get_blog_comments():
-    pass
+def get_blog_comments(blog_id: int, uow: AbstractUnitOfWork):
+    with uow:
+        return uow.comments.get_blog_comments(blog_id)
